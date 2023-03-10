@@ -8,14 +8,15 @@ const COMPUTER_MARKER = "O";
 
 while (true) {
   let board = initializeBoard();
+  
+  let currentPlayer = "player";
 
   while (true) {
     displayBoard(board);
-  
-    playerChoosesSquare(board);
-    if (someoneWon(board) || boardFull(board))  break;
-  
-    computerChoosesSquare(board);
+    
+    chooseSquare(board, currentPlayer);
+    currentPlayer = alternatePlayer(currentPlayer);
+    
     if (someoneWon(board) || boardFull(board))  break;
   }
 
@@ -33,6 +34,22 @@ while (true) {
 }
 
 prompt('Thanks for playing Tic Tac Toe!');
+
+function chooseSquare(board, currentPlayer) {
+  if (currentPlayer === "player") {
+    playerChoosesSquare(board);
+  } else {
+    computerChoosesSquare(board);
+  }
+}
+
+function alternatePlayer(currentPlayer) {
+  if (currentPlayer === "player") {
+    return currentPlayer = "computer";
+  } else {
+    return currentPlayer = "player"
+  }
+}
 
 function prompt(msg) {
   console.log(`=> ${msg}`);
