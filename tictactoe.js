@@ -4,6 +4,36 @@ const INITIAL_MARKER = " ";
 const HUMAN_MARKER = "X";
 const COMPUTER_MARKER = "O";
 
+// Main Game Loop
+
+while (true) {
+  let board = initializeBoard();
+
+  while (true) {
+    displayBoard(board);
+  
+    playerChoosesSquare(board);
+    if (someoneWon(board) || boardFull(board))  break;
+  
+    computerChoosesSquare(board);
+    if (someoneWon(board) || boardFull(board))  break;
+  }
+
+  displayBoard(board);
+
+  if (someoneWon(board)) {
+    prompt(`${detectWinner(board)} won!`);
+  } else {
+    prompt("It's a tie!");
+  }
+  
+  prompt('Play again? (y or n)');
+  let answer = readline.question().toLowerCase()[0];
+  if (answer !== 'y') break;
+}
+
+prompt('Thanks for playing Tic Tac Toe!');
+
 function prompt(msg) {
   console.log(`=> ${msg}`);
 }
@@ -100,33 +130,5 @@ function detectWinner(board) {
 
   return null;
 }
-
-while (true) {
-  let board = initializeBoard();
-
-  while (true) {
-    displayBoard(board);
-  
-    playerChoosesSquare(board);
-    if (someoneWon(board) || boardFull(board))  break;
-  
-    computerChoosesSquare(board);
-    if (someoneWon(board) || boardFull(board))  break;
-  }
-
-  displayBoard(board);
-
-  if (someoneWon(board)) {
-    prompt(`${detectWinner(board)} won!`);
-  } else {
-    prompt("It's a tie!");
-  }
-  
-  prompt('Play again? (y or n)');
-  let answer = readline.question().toLowerCase()[0];
-  if (answer !== 'y') break;
-}
-
-prompt('Thanks for playing Tic Tac Toe!');
 
 
