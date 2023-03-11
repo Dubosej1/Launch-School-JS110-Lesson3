@@ -4,6 +4,12 @@ const INITIAL_MARKER = " ";
 const HUMAN_MARKER = "X";
 const COMPUTER_MARKER = "O";
 
+const WINNING_LINES = [
+  [1, 2, 3], [4, 5, 6], [7, 8, 9], //rows
+  [1, 4, 7], [2, 5, 8], [3, 6, 9], //columns
+  [1, 5, 9], [3, 5, 7] //diagonals
+];
+
 const INITIAL_PLAYER_SETTING = "choose";
 const WINNING_SCORE = 5;
 
@@ -243,7 +249,7 @@ function getInitialPlayerChoice() {
 }
 
 function displayBoard(board) {
-  console.clear();
+  // console.clear();
 
   console.log(`You are ${HUMAN_MARKER}. Computer is ${COMPUTER_MARKER}`);
 
@@ -288,7 +294,27 @@ function playerChoosesSquare(board) {
 }
 
 function computerChoosesSquare(board) {
+  let optimalOffensiveSq = detectIncompleteLine(board, "computer");
+
+  if (optimalOffensiveSq) {
+    board[optimalOffensiveSq] = COMPUTER_MARKER;
+    return;
+  }
+
+  let optimalDefensiveSq = detectIncompleteLine(board, "player");
+
+  if (optimalDefensiveSq) {
+    board[optimalDefensiveSq] = COMPUTER_MARKER;
+    return;
+  }
+
+  if (board["5"] === INITIAL_MARKER) {
+    board["5"] = COMPUTER_MARKER;
+    return;
+  }
+
   let randomIndex = Math.floor(Math.random() * emptySquares(board).length);
+  console.log("random sq chosen");
 
   let square = emptySquares(board)[randomIndex];
   board[square] = COMPUTER_MARKER;
@@ -308,11 +334,9 @@ function someoneWon(board) {
 }
 
 function detectWinner(board) {
-  let winningLines = [[1, 2, 3], [4, 5, 6], [7, 8, 9],
-    [1, 4, 7], [2, 5, 8], [3, 6, 9], [1, 5, 9], [3, 5, 7]];
 
-  for (let line = 0; line < winningLines.length; line++) {
-    let [ sq1, sq2, sq3 ] = winningLines[line];
+  for (let line = 0; line < WINNING_LINES.length; line++) {
+    let [ sq1, sq2, sq3 ] = WINNING_LINES[line];
 
     if (
       board[sq1] === HUMAN_MARKER && board[sq2] === HUMAN_MARKER &&
@@ -328,4 +352,32 @@ function detectWinner(board) {
   }
 
   return null;
+}
+
+function detectIncompleteLine(board, player) {
+  let marker;
+
+  if (player === "player") {
+    marker =  HUMAN_MARKER;
+  } else {
+    marker = COMPUTER_MARKER;
+  }
+
+  let missing3rdSq = null;
+
+  let markerFilter = sq => board[sq] === marker;
+  let initMarkerFilter = sq => board[sq] === INITIAL_MARKER;
+
+  for (let line = 0; line < WINNING_LINES.length; line++) {
+
+    let markerCount = WINNING_LINES[line].filter(markerFilter).length;
+    let initMarkerCount = WINNING_LINES[line].filter(initMarkerFilter).length;
+
+    if (markerCount === 2 && initMarkerCount === 1) {
+      missing3rdSq = WINNING_LINES[line].filter(sq => board[sq] !== marker)[0];
+      break;
+    }
+  }
+
+  return missing3rdSq;
 }
