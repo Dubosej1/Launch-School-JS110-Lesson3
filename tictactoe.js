@@ -4,14 +4,26 @@ const INITIAL_MARKER = " ";
 const HUMAN_MARKER = "X";
 const COMPUTER_MARKER = "O";
 
+const INITIAL_PLAYER_SETTING = "choose";
+
 // Main Game Loop
 
 greetPlayer();
 
 while (true) {
-  let board = initializeBoard();
+  displayRoundStart();
   
-  let currentPlayer = "player";
+  let currentPlayer;
+  
+  if (INITIAL_PLAYER_SETTING === "choose") {
+    currentPlayer = getInitialPlayerChoice();
+  } else {
+    currentPlayer = INITIAL_PLAYER_SETTING;
+    freezeGame();
+  }
+  
+  while (true) {
+  let board = initializeBoard();
 
   while (true) {
     displayBoard(board);
@@ -37,6 +49,9 @@ while (true) {
 
 prompt('Thanks for playing Tic Tac Toe!');
 
+}
+
+
 function chooseSquare(board, currentPlayer) {
   if (currentPlayer === "player") {
     playerChoosesSquare(board);
@@ -61,9 +76,47 @@ function greetPlayer() {
   let msg1 = "Welcome to Tic Tac Toe!";
   let msg2 = "The first player to win 5 rounds wins!";
   prompt(`${msg1}\n\n${msg2}\n`);
+
+  // freezeGame();
+}
+
+function displayRoundStart() {
+  let roundMsg = `Round 1`;
+  let scoreMsg = `SCORE: Player - 0 | Computer - 0`;
   
-  prompt("Press any key to continue");
-  readline.question();
+  prompt(`${roundMsg}\n\n${scoreMsg}\n`);
+}
+
+function freezeGame() {
+  readline.question("Press any key to continue");
+}
+
+function getInitialPlayerChoice() {
+  let msg = "Who will play first?  ([P]layer or [C]omputer)";
+  
+  prompt(msg);
+  
+  let initialPlayer;
+  
+  const VALID_INPUT = ["p", "player", "c", "computer"];
+  
+  while (true) {
+    initialPlayer = readline.question().toLowerCase();
+    
+    if (VALID_INPUT.includes(initialPlayer)) break;
+    
+    prompt("Invalid input...please try again");
+  }
+  
+  if (initialPlayer === "p") {
+    initialPlayer = "player";
+  }
+  
+  if (initialPlayer === "c") {
+    initialPlayer = "computer";
+  }
+
+  return initialPlayer;
 }
 
 function displayBoard(board) {
