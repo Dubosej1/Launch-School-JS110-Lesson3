@@ -6,6 +6,8 @@ const COMPUTER_MARKER = "O";
 
 // Main Game Loop
 
+greetPlayer();
+
 while (true) {
   let board = initializeBoard();
   
@@ -53,6 +55,15 @@ function alternatePlayer(currentPlayer) {
 
 function prompt(msg) {
   console.log(`=> ${msg}`);
+}
+
+function greetPlayer() {
+  let msg1 = "Welcome to Tic Tac Toe!";
+  let msg2 = "The first player to win 5 rounds wins!";
+  prompt(`${msg1}\n\n${msg2}\n`);
+  
+  prompt("Press any key to continue");
+  readline.question();
 }
 
 function displayBoard(board) {
