@@ -5,13 +5,47 @@ const HUMAN_MARKER = "X";
 const COMPUTER_MARKER = "O";
 
 const INITIAL_PLAYER_SETTING = "choose";
+const WINNING_SCORE = 5;
+
+let roundNum = 0;
+
+let score = {
+  player: 0,
+  computer: 0,
+  
+  incrementScore(player) {
+    if (player === "Player") {
+      this.player += 1;
+    } else {
+      this.computer += 1;
+    }
+  },
+  
+  checkWinner() {
+    if (this.player === WINNING_SCORE) {
+      return "Player";
+    } else if (this.computer === WINNING_SCORE) {
+      return "Computer";
+    } else {
+      return null;
+    }
+  },
+  
+  resetScore() {
+    this.player = 0;
+    this.computer = 0;
+  }
+}
 
 // Main Game Loop
 
 greetPlayer();
 
+// Round Loop
 while (true) {
-  displayRoundStart();
+  roundNum += 1;
+  
+  displayRoundStart(roundNum);
   
   let currentPlayer;
   
@@ -22,33 +56,95 @@ while (true) {
     freezeGame();
   }
   
+  // Gameplay Loop
   while (true) {
-  let board = initializeBoard();
+    let board = initializeBoard();
 
-  while (true) {
+    while (true) {
+      displayBoard(board);
+    
+      chooseSquare(board, currentPlayer);
+      currentPlayer = alternatePlayer(currentPlayer);
+    
+      if (someoneWon(board) || boardFull(board))  break;
+    }
+
     displayBoard(board);
     
-    chooseSquare(board, currentPlayer);
-    currentPlayer = alternatePlayer(currentPlayer);
+    let winner;
     
-    if (someoneWon(board) || boardFull(board))  break;
-  }
-
-  displayBoard(board);
-
-  if (someoneWon(board)) {
-    prompt(`${detectWinner(board)} won!`);
-  } else {
-    prompt("It's a tie!");
+    if (someoneWon(board)) {
+      winner = detectWinner(board);
+      score.incrementScore(winner);
+    } else {
+      winner = "Tie";
+    }
+    
+    displayRoundResult(winner);
+    freezeGame();
+    
+    break;
   }
   
-  prompt('Play again? (y or n)');
-  let answer = readline.question().toLowerCase()[0];
-  if (answer !== 'y') break;
+  let matchWinner = score.checkWinner();
+  
+  if (matchWinner) {
+    displayMatchWinner(matchWinner);
+    
+    let playAgain = promptUserToPlayAgain();
+    
+    if (playAgain) {
+      score.resetScore();
+      roundNum = 0;
+    } else {
+      break;
+    }
+  }
 }
 
 prompt('Thanks for playing Tic Tac Toe!');
 
+function displayRoundResult(winner) {
+  if (winner === "Tie") {
+    prompt("It's a tie!");
+  } else {
+    prompt(`${winner} has won the round.`);
+  }
+}
+
+function displayMatchWinner(winner) {
+  console.clear();
+  
+  let msg;
+  
+  if (winner === "Player") {
+    msg = "Congratulations!!!";
+  } else {
+    msg = "Better luck next time...";
+  }
+  
+  prompt(`${winner} has won 5 rounds and wins the match.  ${msg}`);
+}
+
+function promptUserToPlayAgain() {
+  const VALID_INPUT = ["y", "yes", "n", "no"];
+  
+  prompt("Play again? ([Y]es or [N]o");
+  
+  while (true) {
+    let input = readline.question().toLowerCase();
+  
+    if (!VALID_INPUT.includes(input)) {
+      prompt("Invalid input.  Please try again...");
+      continue;
+    }
+    
+    if (VALID_INPUT.includes(input, 2)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 }
 
 
@@ -80,9 +176,11 @@ function greetPlayer() {
   // freezeGame();
 }
 
-function displayRoundStart() {
-  let roundMsg = `Round 1`;
-  let scoreMsg = `SCORE: Player - 0 | Computer - 0`;
+function displayRoundStart(roundNum) {
+  let roundMsg = `Round ${roundNum}`;
+  let playerScore = `Player - ${score.player}`;
+  let computerScore = `Computer - ${score.computer}`;
+  let scoreMsg = `SCORE: ${playerScore}  | ${computerScore}`;
   
   prompt(`${roundMsg}\n\n${scoreMsg}\n`);
 }
@@ -211,5 +309,3 @@ function detectWinner(board) {
 
   return null;
 }
-
-
