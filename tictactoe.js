@@ -7,56 +7,64 @@ const COMPUTER_MARKER = "O";
 const INITIAL_PLAYER_SETTING = "choose";
 const WINNING_SCORE = 5;
 
-let roundNum = 0;
-
-let score = {
-  player: 0,
-  computer: 0,
-  
-  incrementScore(player) {
-    if (player === "Player") {
-      this.player += 1;
-    } else {
-      this.computer += 1;
-    }
-  },
-  
-  checkWinner() {
-    if (this.player === WINNING_SCORE) {
-      return "Player";
-    } else if (this.computer === WINNING_SCORE) {
-      return "Computer";
-    } else {
-      return null;
-    }
-  },
-  
-  resetScore() {
-    this.player = 0;
-    this.computer = 0;
-  }
-}
-
 // Main Game Loop
 
 greetPlayer();
 
-// Round Loop
-while (true) {
-  roundNum += 1;
-  
-  displayRoundStart(roundNum);
-  
-  let currentPlayer;
-  
-  if (INITIAL_PLAYER_SETTING === "choose") {
-    currentPlayer = getInitialPlayerChoice();
-  } else {
-    currentPlayer = INITIAL_PLAYER_SETTING;
-    freezeGame();
+startMatch();
+
+prompt('Thanks for playing Tic Tac Toe!');
+
+function startMatch() {
+  let roundNum = 0;
+  let score = {
+    player: 0,
+    computer: 0
   }
   
-  // Gameplay Loop
+  while (true) {
+    roundNum += 1;
+  
+    displayRoundStart(roundNum, score);
+  
+    let currentPlayer;
+  
+    if (INITIAL_PLAYER_SETTING === "choose") {
+      currentPlayer = getInitialPlayerChoice();
+    } else {
+      currentPlayer = INITIAL_PLAYER_SETTING;
+      freezeGame();
+    }
+    
+    let roundWinner = executeRound(currentPlayer);
+  
+    if (roundWinner === "Player") {
+      score.player += 1;
+    } else if (roundWinner === "Computer") {
+      score.computer += 1;
+    }
+  
+    let matchWinner = checkMatchWinner(score);
+  
+    if (matchWinner) {
+      displayMatchWinner(matchWinner);
+    
+      let playAgain = promptUserToPlayAgain();
+    
+      if (playAgain) {
+        score.player = 0;
+        score.computer = 0;
+        roundNum = 0;
+      } else {
+        break;
+      }
+    }
+  }
+}
+
+function executeRound(currentPlayer) {
+  let winner;
+  
   while (true) {
     let board = initializeBoard();
 
@@ -71,11 +79,10 @@ while (true) {
 
     displayBoard(board);
     
-    let winner;
+
     
     if (someoneWon(board)) {
       winner = detectWinner(board);
-      score.incrementScore(winner);
     } else {
       winner = "Tie";
     }
@@ -86,23 +93,20 @@ while (true) {
     break;
   }
   
-  let matchWinner = score.checkWinner();
-  
-  if (matchWinner) {
-    displayMatchWinner(matchWinner);
-    
-    let playAgain = promptUserToPlayAgain();
-    
-    if (playAgain) {
-      score.resetScore();
-      roundNum = 0;
-    } else {
-      break;
-    }
-  }
+  return winner;
 }
 
-prompt('Thanks for playing Tic Tac Toe!');
+// Round Loop
+
+function checkMatchWinner (score) {
+  if (score.player === WINNING_SCORE) {
+    return "Player";
+  } else if (score.computer === WINNING_SCORE) {
+    return "Computer";
+  } else {
+    return null;
+  }
+}
 
 function displayRoundResult(winner) {
   if (winner === "Tie") {
@@ -172,11 +176,9 @@ function greetPlayer() {
   let msg1 = "Welcome to Tic Tac Toe!";
   let msg2 = "The first player to win 5 rounds wins!";
   prompt(`${msg1}\n\n${msg2}\n`);
-
-  // freezeGame();
 }
 
-function displayRoundStart(roundNum) {
+function displayRoundStart(roundNum, score) {
   let roundMsg = `Round ${roundNum}`;
   let playerScore = `Player - ${score.player}`;
   let computerScore = `Computer - ${score.computer}`;
