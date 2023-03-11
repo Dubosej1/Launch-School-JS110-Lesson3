@@ -20,83 +20,109 @@ function startMatch() {
   let score = {
     player: 0,
     computer: 0
-  }
-  
+  };
+
   while (true) {
     roundNum += 1;
-  
+
     displayRoundStart(roundNum, score);
-  
-    let currentPlayer;
-  
-    if (INITIAL_PLAYER_SETTING === "choose") {
-      currentPlayer = getInitialPlayerChoice();
-    } else {
-      currentPlayer = INITIAL_PLAYER_SETTING;
-      freezeGame();
-    }
-    
+
+    let currentPlayer = determineInitialPlayer();
+
     let roundWinner = executeRound(currentPlayer);
-  
-    if (roundWinner === "Player") {
-      score.player += 1;
-    } else if (roundWinner === "Computer") {
-      score.computer += 1;
-    }
-  
-    let matchWinner = checkMatchWinner(score);
-  
-    if (matchWinner) {
-      displayMatchWinner(matchWinner);
-    
-      let playAgain = promptUserToPlayAgain();
-    
-      if (playAgain) {
-        score.player = 0;
-        score.computer = 0;
-        roundNum = 0;
-      } else {
-        break;
-      }
+
+    incrementScore(roundWinner, score);
+
+    let nextAction = determineMatchEnd(score);
+
+    if (nextAction === "end game") break;
+
+    if (nextAction === "start new match")  {
+      roundNum = 0;
+      continue;
     }
   }
 }
 
+function determineMatchEnd(score) {
+  let matchWinner = checkMatchWinner(score);
+
+  if (!matchWinner) {
+    return "continue match";
+  }
+
+  displayMatchWinner(matchWinner);
+
+  let playAgain = promptUserToPlayAgain();
+
+  if (playAgain) {
+    resetScore(score);
+    return "start new match";
+  } else {
+    return "end game";
+  }
+}
+
+function determineInitialPlayer() {
+  let initialPlayer;
+
+  if (INITIAL_PLAYER_SETTING === "choose") {
+    initialPlayer = getInitialPlayerChoice();
+  } else {
+    initialPlayer = INITIAL_PLAYER_SETTING;
+    freezeGame();
+  }
+
+  return initialPlayer;
+}
+
 function executeRound(currentPlayer) {
   let winner;
-  
+
   while (true) {
     let board = initializeBoard();
 
     while (true) {
       displayBoard(board);
-    
+
       chooseSquare(board, currentPlayer);
       currentPlayer = alternatePlayer(currentPlayer);
-    
+
       if (someoneWon(board) || boardFull(board))  break;
     }
 
     displayBoard(board);
-    
 
-    
+
     if (someoneWon(board)) {
       winner = detectWinner(board);
     } else {
       winner = "Tie";
     }
-    
+
     displayRoundResult(winner);
     freezeGame();
-    
+
     break;
   }
-  
+
   return winner;
 }
 
 // Round Loop
+
+function incrementScore(winner, score) {
+  if (winner === "Player") {
+    score.player += 1;
+  } else if (winner === "Computer") {
+    score.computer += 1;
+  }
+}
+
+function resetScore(score) {
+  score.player = 0;
+  score.computer = 0;
+}
 
 function checkMatchWinner (score) {
   if (score.player === WINNING_SCORE) {
@@ -118,31 +144,31 @@ function displayRoundResult(winner) {
 
 function displayMatchWinner(winner) {
   console.clear();
-  
+
   let msg;
-  
+
   if (winner === "Player") {
     msg = "Congratulations!!!";
   } else {
     msg = "Better luck next time...";
   }
-  
+
   prompt(`${winner} has won 5 rounds and wins the match.  ${msg}`);
 }
 
 function promptUserToPlayAgain() {
   const VALID_INPUT = ["y", "yes", "n", "no"];
-  
+
   prompt("Play again? ([Y]es or [N]o");
-  
+
   while (true) {
     let input = readline.question().toLowerCase();
-  
+
     if (!VALID_INPUT.includes(input)) {
       prompt("Invalid input.  Please try again...");
       continue;
     }
-    
+
     if (VALID_INPUT.includes(input, 2)) {
       return false;
     } else {
@@ -162,10 +188,12 @@ function chooseSquare(board, currentPlayer) {
 
 function alternatePlayer(currentPlayer) {
   if (currentPlayer === "player") {
-    return currentPlayer = "computer";
+    currentPlayer = "computer";
   } else {
-    return currentPlayer = "player"
+    currentPlayer = "player";
   }
+
+  return currentPlayer;
 }
 
 function prompt(msg) {
@@ -183,7 +211,7 @@ function displayRoundStart(roundNum, score) {
   let playerScore = `Player - ${score.player}`;
   let computerScore = `Computer - ${score.computer}`;
   let scoreMsg = `SCORE: ${playerScore}  | ${computerScore}`;
-  
+
   prompt(`${roundMsg}\n\n${scoreMsg}\n`);
 }
 
@@ -193,25 +221,25 @@ function freezeGame() {
 
 function getInitialPlayerChoice() {
   let msg = "Who will play first?  ([P]layer or [C]omputer)";
-  
+
   prompt(msg);
-  
+
   let initialPlayer;
-  
+
   const VALID_INPUT = ["p", "player", "c", "computer"];
-  
+
   while (true) {
     initialPlayer = readline.question().toLowerCase();
-    
+
     if (VALID_INPUT.includes(initialPlayer)) break;
-    
+
     prompt("Invalid input...please try again");
   }
-  
+
   if (initialPlayer === "p") {
     initialPlayer = "player";
   }
-  
+
   if (initialPlayer === "c") {
     initialPlayer = "computer";
   }
@@ -221,9 +249,9 @@ function getInitialPlayerChoice() {
 
 function displayBoard(board) {
   console.clear();
-  
+
   console.log(`You are ${HUMAN_MARKER}. Computer is ${COMPUTER_MARKER}`);
-  
+
   console.log('');
   console.log('     |     |');
   console.log(`  ${board['1']}  |  ${board['2']}  |  ${board['3']}`);
@@ -255,7 +283,7 @@ function playerChoosesSquare(board) {
   while (true) {
     prompt(`Choose a square (${emptySquares(board).join(', ')}):`);
     square = readline.question().trim();
-    
+
     if (emptySquares(board).includes(square)) break;
 
     prompt("Sorry, that's not a valid choice.");
@@ -295,13 +323,13 @@ function detectWinner(board) {
     let [ sq1, sq2, sq3 ] = winningLines[line];
 
     if (
-        board[sq1] === HUMAN_MARKER &&
+      board[sq1] === HUMAN_MARKER &&
         board[sq2] === HUMAN_MARKER &&
         board[sq3] === HUMAN_MARKER
     ) {
       return 'Player';
     } else if (
-        board[sq1] === COMPUTER_MARKER &&
+      board[sq1] === COMPUTER_MARKER &&
         board[sq2] === COMPUTER_MARKER &&
         board[sq3] === COMPUTER_MARKER
     ) {
