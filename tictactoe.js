@@ -13,13 +13,14 @@ const WINNING_LINES = [
 const INITIAL_PLAYER_SETTING = "choose";
 const WINNING_SCORE = 5;
 
-// Main Game Loop
-
+// Program Execution
 greetPlayer();
 
 startMatch();
 
 prompt('Thanks for playing Tic Tac Toe!');
+
+// Main Game Loop
 
 function startMatch() {
   let roundNum = 0;
@@ -45,9 +46,52 @@ function startMatch() {
 
     if (nextAction === "start new match")  {
       roundNum = 0;
+      //NOTE: Score reset is inside determineMatchEnd()
       continue;
     }
   }
+}
+
+function determineInitialPlayer() {
+  let initialPlayer;
+
+  if (INITIAL_PLAYER_SETTING === "choose") {
+    initialPlayer = getInitialPlayerChoice();
+  } else {
+    initialPlayer = INITIAL_PLAYER_SETTING;
+    freezeGame();
+  }
+
+  return initialPlayer;
+}
+
+function getInitialPlayerChoice() {
+  let msg = "Who will play first?  ([P]layer or [C]omputer)";
+
+  prompt(msg);
+
+  let initialPlayer;
+
+  const VALID_INPUT = ["p", "player", "c", "computer"];
+
+  //Get user input and validation
+  while (true) {
+    initialPlayer = readline.question().toLowerCase();
+
+    if (VALID_INPUT.includes(initialPlayer)) break;
+
+    prompt("Invalid input...please try again");
+  }
+
+  if (initialPlayer === "p") {
+    initialPlayer = "player";
+  }
+
+  if (initialPlayer === "c") {
+    initialPlayer = "computer";
+  }
+
+  return initialPlayer;
 }
 
 function determineMatchEnd(score) {
@@ -69,18 +113,30 @@ function determineMatchEnd(score) {
   }
 }
 
-function determineInitialPlayer() {
-  let initialPlayer;
+function promptUserToPlayAgain() {
+  const VALID_INPUT = ["y", "yes", "n", "no"];
 
-  if (INITIAL_PLAYER_SETTING === "choose") {
-    initialPlayer = getInitialPlayerChoice();
-  } else {
-    initialPlayer = INITIAL_PLAYER_SETTING;
-    freezeGame();
+  prompt("Play again? ([Y]es or [N]o");
+
+  //Get user input and validation
+  while (true) {
+    let input = readline.question().toLowerCase();
+
+    if (!VALID_INPUT.includes(input)) {
+      prompt("Invalid input.  Please try again...");
+      continue;
+    }
+
+   //Checks for n or no and returns false, returns true otherwise
+    if (VALID_INPUT.includes(input, 2)) {
+      return false;
+    } else {
+      return true;
+    }
   }
-
-  return initialPlayer;
 }
+
+// Game Logic / Round Gameplay Loop
 
 function executeRound(currentPlayer) {
   let winner;
@@ -110,75 +166,6 @@ function executeRound(currentPlayer) {
   return winner;
 }
 
-// Round Loop
-
-function incrementScore(winner, score) {
-  if (winner === "Player") {
-    score.player += 1;
-  } else if (winner === "Computer") {
-    score.computer += 1;
-  }
-}
-
-function resetScore(score) {
-  score.player = 0;
-  score.computer = 0;
-}
-
-function checkMatchWinner (score) {
-  if (score.player === WINNING_SCORE) {
-    return "Player";
-  } else if (score.computer === WINNING_SCORE) {
-    return "Computer";
-  } else {
-    return null;
-  }
-}
-
-function displayRoundResult(winner) {
-  if (winner === "Tie") {
-    prompt("It's a tie!");
-  } else {
-    prompt(`${winner} has won the round.`);
-  }
-}
-
-function displayMatchWinner(winner) {
-  console.clear();
-
-  let msg;
-
-  if (winner === "Player") {
-    msg = "Congratulations!!!";
-  } else {
-    msg = "Better luck next time...";
-  }
-
-  prompt(`${winner} has won 5 rounds and wins the match.  ${msg}`);
-}
-
-function promptUserToPlayAgain() {
-  const VALID_INPUT = ["y", "yes", "n", "no"];
-
-  prompt("Play again? ([Y]es or [N]o");
-
-  while (true) {
-    let input = readline.question().toLowerCase();
-
-    if (!VALID_INPUT.includes(input)) {
-      prompt("Invalid input.  Please try again...");
-      continue;
-    }
-
-    if (VALID_INPUT.includes(input, 2)) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-}
-
-
 function chooseSquare(board, currentPlayer) {
   if (currentPlayer === "player") {
     playerChoosesSquare(board);
@@ -197,77 +184,6 @@ function alternatePlayer(currentPlayer) {
   return currentPlayer;
 }
 
-function prompt(msg) {
-  console.log(`=> ${msg}`);
-}
-
-function greetPlayer() {
-  let msg1 = "Welcome to Tic Tac Toe!";
-  let msg2 = "The first player to win 5 rounds wins!";
-  prompt(`${msg1}\n\n${msg2}\n`);
-}
-
-function displayRoundStart(roundNum, score) {
-  let roundMsg = `Round ${roundNum}`;
-  let playerScore = `Player - ${score.player}`;
-  let computerScore = `Computer - ${score.computer}`;
-  let scoreMsg = `SCORE: ${playerScore}  | ${computerScore}`;
-
-  prompt(`${roundMsg}\n\n${scoreMsg}\n`);
-}
-
-function freezeGame() {
-  readline.question("Press any key to continue");
-}
-
-function getInitialPlayerChoice() {
-  let msg = "Who will play first?  ([P]layer or [C]omputer)";
-
-  prompt(msg);
-
-  let initialPlayer;
-
-  const VALID_INPUT = ["p", "player", "c", "computer"];
-
-  while (true) {
-    initialPlayer = readline.question().toLowerCase();
-
-    if (VALID_INPUT.includes(initialPlayer)) break;
-
-    prompt("Invalid input...please try again");
-  }
-
-  if (initialPlayer === "p") {
-    initialPlayer = "player";
-  }
-
-  if (initialPlayer === "c") {
-    initialPlayer = "computer";
-  }
-
-  return initialPlayer;
-}
-
-function displayBoard(board) {
-  // console.clear();
-
-  console.log(`You are ${HUMAN_MARKER}. Computer is ${COMPUTER_MARKER}`);
-
-  console.log('');
-  console.log('     |     |');
-  console.log(`  ${board['1']}  |  ${board['2']}  |  ${board['3']}`);
-  console.log('     |     |');
-  console.log('-----+-----+-----');
-  console.log('     |     |');
-  console.log(`  ${board['4']}  |  ${board['5']}  |  ${board['6']}`);
-  console.log('     |     |');
-  console.log('-----+-----+-----');
-  console.log('     |     |');
-  console.log(`  ${board['7']}  |  ${board['8']}  |  ${board['9']}`);
-  console.log('     |     |');
-  console.log('');
-}
-
 function initializeBoard() {
   let board = {};
 
@@ -281,8 +197,9 @@ function initializeBoard() {
 function playerChoosesSquare(board) {
   let square;
 
+  //Get user input and validation
   while (true) {
-    prompt(`Choose a square (${emptySquares(board).join(', ')}):`);
+    prompt(`Choose a square (${joinOr(emptySquares(board))})`);
     square = readline.question().trim();
 
     if (emptySquares(board).includes(square)) break;
@@ -294,6 +211,7 @@ function playerChoosesSquare(board) {
 }
 
 function computerChoosesSquare(board) {
+  //Check if CPU should play Offense first
   let optimalOffensiveSq = detectIncompleteLine(board, "computer");
 
   if (optimalOffensiveSq) {
@@ -301,6 +219,7 @@ function computerChoosesSquare(board) {
     return;
   }
 
+  //Check if CPU should play Defense next
   let optimalDefensiveSq = detectIncompleteLine(board, "player");
 
   if (optimalDefensiveSq) {
@@ -308,11 +227,13 @@ function computerChoosesSquare(board) {
     return;
   }
 
+  //Check if Sq 5 is avail for CPU to play
   if (board["5"] === INITIAL_MARKER) {
     board["5"] = COMPUTER_MARKER;
     return;
   }
 
+  //Choose random square if no other plays are available
   let randomIndex = Math.floor(Math.random() * emptySquares(board).length);
   console.log("random sq chosen");
 
@@ -334,7 +255,6 @@ function someoneWon(board) {
 }
 
 function detectWinner(board) {
-
   for (let line = 0; line < WINNING_LINES.length; line++) {
     let [ sq1, sq2, sq3 ] = WINNING_LINES[line];
 
@@ -354,6 +274,7 @@ function detectWinner(board) {
   return null;
 }
 
+//Checks if a winning line is filled with 2 of the same player markers
 function detectIncompleteLine(board, player) {
   let marker;
 
@@ -380,4 +301,119 @@ function detectIncompleteLine(board, player) {
   }
 
   return missing3rdSq;
+}
+
+//Scoring and Determining Winner logic
+
+function incrementScore(winner, score) {
+  if (winner === "Player") {
+    score.player += 1;
+  } else if (winner === "Computer") {
+    score.computer += 1;
+  }
+}
+
+function resetScore(score) {
+  score.player = 0;
+  score.computer = 0;
+}
+
+function checkMatchWinner (score) {
+  if (score.player === WINNING_SCORE) {
+    return "Player";
+  } else if (score.computer === WINNING_SCORE) {
+    return "Computer";
+  } else {
+    return null;
+  }
+}
+
+// Text Display Functions
+
+function prompt(msg) {
+  console.log(`=> ${msg}`);
+}
+
+function greetPlayer() {
+  let msg1 = "Welcome to Tic Tac Toe!";
+  let msg2 = "The first player to win 5 rounds wins!";
+  prompt(`${msg1}\n\n${msg2}\n`);
+}
+
+function displayRoundStart(roundNum, score) {
+  let roundMsg = `Round ${roundNum}`;
+  let playerScore = `Player - ${score.player}`;
+  let computerScore = `Computer - ${score.computer}`;
+  let scoreMsg = `SCORE: ${playerScore}  | ${computerScore}`;
+
+  prompt(`${roundMsg}\n\n${scoreMsg}\n`);
+}
+
+function displayRoundResult(winner) {
+  if (winner === "Tie") {
+    prompt("It's a tie!");
+  } else {
+    prompt(`${winner} has won the round.`);
+  }
+}
+
+function displayMatchWinner(winner) {
+  console.clear();
+
+  let msg;
+
+  if (winner === "Player") {
+    msg = "Congratulations!!!";
+  } else {
+    msg = "Better luck next time...";
+  }
+
+  prompt(`${winner} has won 5 rounds and wins the match.  ${msg}`);
+}
+
+//Pauses game execution for better game flow and readability
+function freezeGame() {
+  readline.question("Press any key to continue");
+}
+
+function displayBoard(board) {
+  console.log(`You are ${HUMAN_MARKER}. Computer is ${COMPUTER_MARKER}`);
+
+  console.log('');
+  console.log('     |     |');
+  console.log(`  ${board['1']}  |  ${board['2']}  |  ${board['3']}`);
+  console.log('     |     |');
+  console.log('-----+-----+-----');
+  console.log('     |     |');
+  console.log(`  ${board['4']}  |  ${board['5']}  |  ${board['6']}`);
+  console.log('     |     |');
+  console.log('-----+-----+-----');
+  console.log('     |     |');
+  console.log(`  ${board['7']}  |  ${board['8']}  |  ${board['9']}`);
+  console.log('     |     |');
+  console.log('');
+}
+
+//Used to increase readability of Player's "choose a square" prompt
+function joinOr(arr, delimiter = ",", joinWord = "or") {
+  if (arr.length < 2) {
+    return arr.join("");
+  }
+
+  if (arr.length === 2) {
+    return `${arr[0]} ${joinWord} ${arr[1]}`;
+  }
+
+  let delimitedArr = arr.join(`${delimiter} `).split("");
+
+  let idx = delimitedArr.length - 1;
+
+  while (true) {
+    if (delimitedArr[idx] === delimiter) break;
+    idx -= 1;
+  }
+
+  delimitedArr[idx] = ` ${joinWord}`;
+
+  return delimitedArr.join("");
 }
